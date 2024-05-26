@@ -2,11 +2,16 @@ package com.company.login_app.services;
 
 import com.company.login_app.dto.UserDTO;
 import com.company.login_app.models.AppUser;
+import com.company.login_app.models.Token;
 import com.company.login_app.models.UserRole;
+import com.company.login_app.repositories.TokenRepository;
 import com.company.login_app.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +19,7 @@ public class RegistrationService {
 
     private final UserRepository repository;
     private final PasswordEncoder encoder;
+    private final TokenRepository tokenRepository;
 
     public String register(UserDTO userDTO){
         //check if the user already exist
@@ -34,7 +40,17 @@ public class RegistrationService {
                 .build();
 
         //Save user
-        repository.save(appUser);
-        return "User has been registered successfully";
+        AppUser user = repository.save(appUser);
+
+        //Token creation
+        String generatedToken= UUID.randomUUID().toString();
+        Token token= Token.builder()
+                .token(generatedToken)
+                .createdAt(LocalDateTime.now())
+                .expiredAt(LocalDateTime.now().plusMinutes(10))
+                .user(user)
+                .build();
+        tokenRepository.save(token);
+        return generatedToken;
     }
 }
