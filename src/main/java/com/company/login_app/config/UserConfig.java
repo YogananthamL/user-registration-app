@@ -4,6 +4,7 @@ import com.company.login_app.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,26 +19,35 @@ import org.springframework.security.web.SecurityFilterChain;
 public class UserConfig {
 
     private final UserService service;
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
-        http.authorizeHttpRequests(request->
-                request.requestMatchers("/register").permitAll()
-                        .anyRequest().authenticated()).authenticationProvider(authenticationProvider());
 
-        http.csrf(csrf->
-                csrf.disable());
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(request ->
+                        request.requestMatchers("/register").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/register/confirm").permitAll()
+                                .anyRequest().authenticated())
+                .formLogin(form -> form.permitAll()) // Use the default login page
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll())
+                .authenticationProvider(authenticationProvider());
+
+        http.csrf(csrf -> csrf.disable());
 
         return http.build();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider daoAuthenticationProvider=new DaoAuthenticationProvider();
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setUserDetailsService(service);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         return daoAuthenticationProvider;

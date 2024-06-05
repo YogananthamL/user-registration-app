@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Our Application</title>
+    <link rel="stylesheet" th:href="@{/welcome-stylesheet.css}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Welcome </h1> <span th:text="${username}"></span>
+    </header>
+    <main>
+        <p>Your journey to better productivity starts here.</p>
+        <a th:href="@{/logout}" class="button">Logout</a>
+    </main>
+    <footer>
+        <p>&copy; 2024 Our Application. All rights reserved.</p>
+    </footer>
+</div>
+</body>
+</html>
